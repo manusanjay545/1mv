@@ -28,7 +28,7 @@ export default function SearchBar({
   return (
     <form onSubmit={handleSubmit} className={`relative w-full ${className}`}>
       <Search
-        className={`absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 ${
+        className={`absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 ${
           large ? 'h-5 w-5' : 'h-4 w-4'
         }`}
       />
@@ -37,10 +37,18 @@ export default function SearchBar({
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
-        className={`w-full rounded-full border border-gray-700 bg-gray-800/80 text-white placeholder-gray-500 outline-none transition-all duration-300 focus:border-accent focus:ring-2 focus:ring-accent/20 ${
-          large ? 'py-4 pl-12 pr-6 text-base' : 'py-2.5 pl-10 pr-4 text-sm'
+        className={`w-full rounded-lg border border-[#1f293d] bg-[#111722] text-white placeholder-gray-500 outline-none transition-all duration-200 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 ${
+          large ? 'py-3.5 pl-11 pr-24 text-sm' : 'py-2 pl-9 pr-16 text-xs'
         }`}
       />
+      <button
+        type="submit"
+        className={`absolute right-1.5 top-1/2 -translate-y-1/2 rounded bg-emerald-500 hover:bg-emerald-400 text-black font-black transition-colors ${
+          large ? 'px-4 py-2 text-xs' : 'px-2.5 py-1 text-[11px]'
+        }`}
+      >
+        Search
+      </button>
     </form>
   );
 }

@@ -1,7 +1,21 @@
 import Link from 'next/link';
-import { Sparkles, TrendingUp, Tv, Film, Compass, Calendar, Layers } from 'lucide-react';
+import {
+  Sparkles,
+  TrendingUp,
+  Tv,
+  Film,
+  Compass,
+  Calendar,
+  Layers,
+  Flame,
+  Radio,
+  AlertTriangle,
+  ArrowRight,
+  ShieldCheck,
+} from 'lucide-react';
 import SearchBar from '@/components/SearchBar';
 import MovieGrid from '@/components/MovieGrid';
+import DirectoryTable from '@/components/DirectoryTable';
 import LanguageCard from '@/components/LanguageCard';
 import { createAdminClient } from '@/lib/supabase';
 import { SAMPLE_MOVIES } from '@/lib/seed-data';
@@ -9,6 +23,7 @@ import { GENRES, getYearRange, type Movie } from '@/types';
 import { slugify } from '@/lib/utils';
 
 async function getMovies(): Promise<{
+  all: Movie[];
   latest: Movie[];
   trending: Movie[];
   webSeries: Movie[];
@@ -18,16 +33,17 @@ async function getMovies(): Promise<{
     const supabase = createAdminClient();
 
     const [latestRes, trendingRes, seriesRes, updatedRes] = await Promise.all([
-      supabase.from('movies').select('*').order('created_at', { ascending: false }).limit(12),
+      supabase.from('movies').select('*').order('created_at', { ascending: false }).limit(24),
       supabase.from('movies').select('*').order('view_count', { ascending: false }).limit(12),
       supabase.from('movies').select('*').eq('is_web_series', true).order('created_at', { ascending: false }).limit(12),
-      supabase.from('movies').select('*').order('updated_at', { ascending: false }).limit(6),
+      supabase.from('movies').select('*').order('updated_at', { ascending: false }).limit(12),
     ]);
 
     if (latestRes.data && latestRes.data.length > 0) {
       return {
-        latest: latestRes.data as Movie[],
-        trending: (trendingRes.data as Movie[]) || (latestRes.data as Movie[]),
+        all: latestRes.data as Movie[],
+        latest: (latestRes.data as Movie[]).slice(0, 12),
+        trending: (trendingRes.data as Movie[]) || (latestRes.data as Movie[]).slice(0, 12),
         webSeries: (seriesRes.data as Movie[]) || [],
         recentlyUpdated: (updatedRes.data as Movie[]) || [],
       };
@@ -36,7 +52,7 @@ async function getMovies(): Promise<{
     console.warn('Supabase not configured or query failed, rendering initial catalogue data:', err);
   }
 
-  // Graceful fallback for preview / initial deployment
+  // Graceful fallback for initial deployment
   const fallbackMovies: Movie[] = SAMPLE_MOVIES.map((m, index) => ({
     id: `seed-${index}`,
     source_id: `seed-${index}`,
@@ -60,188 +76,196 @@ async function getMovies(): Promise<{
   }));
 
   return {
+    all: fallbackMovies,
     latest: fallbackMovies.slice(0, 12),
     trending: [...fallbackMovies].sort((a, b) => b.view_count - a.view_count).slice(0, 12),
     webSeries: fallbackMovies.filter((m) => m.is_web_series),
-    recentlyUpdated: fallbackMovies.slice(0, 6),
+    recentlyUpdated: fallbackMovies.slice(0, 12),
   };
 }
 
 export default async function HomePage() {
-  const { latest, trending, webSeries, recentlyUpdated } = await getMovies();
-  const years = getYearRange().slice(0, 7); // 2026 down to 2020
+  const { all, latest, trending, webSeries, recentlyUpdated } = await getMovies();
+  const years = getYearRange().slice(0, 8); // 2026 down to 2019
   const mainLanguages = ['Tamil', 'Telugu', 'Malayalam', 'Kannada', 'Hindi', 'English'];
 
   return (
-    <div className="flex flex-col gap-12 pb-20">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-gray-900 bg-gradient-to-b from-gray-900 via-gray-950 to-gray-950 py-16 sm:py-24">
-        {/* Ambient glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-rose-600/10 blur-[120px] pointer-events-none rounded-full" />
-
-        <div className="relative mx-auto max-w-4xl px-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-rose-500/30 bg-rose-500/10 px-4 py-1.5 text-xs font-semibold text-rose-400 mb-6 backdrop-blur-sm">
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Updated Every 15 Minutes &bull; High Quality Downloads</span>
+    <div className="flex flex-col gap-6 pb-16">
+      {/* 1. TOP ANNOUNCEMENT NOTICE BOX (1TamilMV authentic alert) */}
+      <div className="mx-auto max-w-7xl w-full px-3 sm:px-6 pt-3">
+        <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+            <span className="text-gray-200">
+              <strong className="text-amber-400">OFFICIAL NOTICE:</strong> Bookmark our permanent domain.{' '}
+              <span className="text-gray-300 hidden md:inline">
+                All download links are powered by verified high-speed mirrors via our monetization partner ShrinkMe.
+              </span>
+            </span>
           </div>
-
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-4">
-            Discover & Download <span className="bg-gradient-to-r from-rose-500 via-red-500 to-amber-500 bg-clip-text text-transparent">Movies</span>
-          </h1>
-
-          <p className="text-base sm:text-lg text-gray-400 max-w-2xl mx-auto mb-8">
-            Comprehensive South Indian and Bollywood movie directory. Browse Tamil, Telugu, Malayalam,
-            Hindi, and English releases in 4K, 1080p and 720p.
-          </p>
-
-          <div className="max-w-xl mx-auto">
-            <SearchBar large placeholder="Search by title, actor, language or genre..." />
-          </div>
-
-          {/* Quick Language Pills */}
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
-            <span className="text-xs text-gray-500 mr-1">Quick Browse:</span>
-            {mainLanguages.map((lang) => (
-              <Link
-                key={lang}
-                href={`/browse?language=${encodeURIComponent(lang)}`}
-                className="rounded-full bg-gray-900/80 hover:bg-rose-900/40 border border-gray-800 hover:border-rose-500/40 px-3 py-1 text-xs text-gray-300 transition-colors"
-              >
-                {lang}
-              </Link>
-            ))}
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="inline-flex items-center gap-1 rounded bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Auto 15m Sync
+            </span>
+            <Link
+              href="/browse?sort=newest"
+              className="text-amber-400 hover:text-amber-300 font-bold underline text-[11px]"
+            >
+              Latest Added &rarr;
+            </Link>
           </div>
         </div>
-      </section>
+      </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 space-y-14">
-        {/* 1. Latest Additions */}
+      {/* 2. QUICK LANGUAGE & YEAR PILLS BAR */}
+      <div className="mx-auto max-w-7xl w-full px-3 sm:px-6">
+        <div className="flex items-center gap-1.5 overflow-x-auto hide-scrollbar py-1">
+          <span className="text-[11px] font-bold uppercase text-gray-500 shrink-0 pr-1">
+            Quick Hub:
+          </span>
+          <Link
+            href="/browse?language=Tamil&year=2026"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-emerald-400 hover:bg-[#192233] shrink-0"
+          >
+            Tamil 2026
+          </Link>
+          <Link
+            href="/browse?language=Telugu&year=2026"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-amber-400 hover:bg-[#192233] shrink-0"
+          >
+            Telugu 2026
+          </Link>
+          <Link
+            href="/browse?language=Malayalam"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-gray-300 hover:text-white hover:bg-[#192233] shrink-0"
+          >
+            Malayalam
+          </Link>
+          <Link
+            href="/browse?language=Hindi"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-blue-400 hover:bg-[#192233] shrink-0"
+          >
+            Hindi Dubbed
+          </Link>
+          <Link
+            href="/browse?category=Web+Series"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-purple-400 hover:bg-[#192233] shrink-0"
+          >
+            Web Series / OTT
+          </Link>
+          <Link
+            href="/browse?genre=Action"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-gray-300 hover:text-white hover:bg-[#192233] shrink-0"
+          >
+            Action
+          </Link>
+          <Link
+            href="/browse?sort=popular"
+            className="rounded px-2.5 py-1 text-xs font-bold bg-[#111722] border border-[#1f293d] text-red-400 hover:bg-[#192233] shrink-0"
+          >
+            Top Hits
+          </Link>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl w-full px-3 sm:px-6 space-y-8">
+        {/* 3. LATEST ADDITIONS (Poster Grid) */}
         <MovieGrid
-          title="Latest Additions"
+          title="Latest Additions &amp; New Prints"
+          subtitle="Newly indexed high-definition releases across all languages"
           movies={latest}
           viewAllHref="/browse?sort=newest"
+          icon={<Sparkles className="h-4 w-4 text-emerald-400" />}
         />
 
-        {/* 2. Recently Updated */}
-        {recentlyUpdated.length > 0 && (
-          <section className="rounded-2xl border border-gray-900 bg-gray-900/40 p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-2 mb-4 text-rose-400 font-semibold text-sm uppercase tracking-wider">
-              <Layers className="h-4 w-4" />
-              <span>Recently Updated Prints & Audios</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-              {recentlyUpdated.map((m) => (
-                <Link
-                  key={`updated-${m.id}`}
-                  href={`/movie/${m.slug}`}
-                  className="p-3 rounded-xl bg-gray-900/80 border border-gray-800/80 hover:border-rose-500/50 hover:bg-gray-800 transition-all flex flex-col justify-between"
-                >
-                  <span className="text-xs font-semibold text-white line-clamp-1">{m.title}</span>
-                  <div className="flex items-center justify-between text-[11px] text-gray-500 mt-2">
-                    <span className="text-rose-400 font-medium">{m.quality || 'HDRip'}</span>
-                    <span>{m.language}</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
+        {/* 4. LIVE DIRECTORY TABLE (The 1TamilMV Invision Forum / Table layout) */}
+        <DirectoryTable movies={all} />
 
-        {/* 3. Trending Movies */}
+        {/* 5. TRENDING / POPULAR MOVIES */}
         <MovieGrid
-          title="Trending Movies"
+          title="Trending &amp; Most Downloaded"
+          subtitle="Top viewed titles based on visitor download activity"
           movies={trending}
           viewAllHref="/browse?sort=popular"
+          icon={<Flame className="h-4 w-4 text-amber-400" />}
         />
 
-        {/* 4. Latest Web Series */}
+        {/* 6. LATEST WEB SERIES */}
         {webSeries.length > 0 && (
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <Tv className="h-5 w-5 text-blue-400" />
-              <h2 className="text-xl sm:text-2xl font-bold text-white">Latest Web Series</h2>
-            </div>
-            <p className="text-sm text-gray-400 mb-6">Binge complete seasons and new weekly episodes</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-6">
-              {webSeries.map((s) => (
-                <Link key={s.id} href={`/movie/${s.slug}`} className="group block">
-                  <div className="overflow-hidden rounded-xl bg-gray-900 ring-1 ring-gray-800 group-hover:ring-blue-500/50 transition-all duration-300 group-hover:scale-[1.03]">
-                    <div className="relative aspect-[2/3] w-full">
-                      <img
-                        src={s.poster_url || '/placeholder-poster.svg'}
-                        alt={s.title}
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                      />
-                      <span className="absolute top-2 right-2 rounded bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white uppercase">
-                        Series
-                      </span>
-                    </div>
-                    <div className="p-3">
-                      <h3 className="line-clamp-1 text-sm font-semibold text-gray-200 group-hover:text-blue-400 transition-colors">
-                        {s.title}
-                      </h3>
-                      <div className="flex items-center justify-between mt-1 text-xs text-gray-500">
-                        <span>{s.release_year}</span>
-                        <span>{s.language}</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
+          <MovieGrid
+            title="Latest Web Series &amp; OTT Seasons"
+            subtitle="Complete seasons, multi-audio episodes, and exclusive OTT drops"
+            movies={webSeries}
+            viewAllHref="/browse?category=Web+Series"
+            icon={<Tv className="h-4 w-4 text-purple-400" />}
+          />
         )}
 
-        {/* 5. Browse by Language */}
-        <section>
-          <div className="flex items-center gap-2 mb-6">
-            <Compass className="h-5 w-5 text-rose-500" />
-            <h2 className="text-xl sm:text-2xl font-bold text-white">Browse by Language</h2>
+        {/* 7. BROWSE BY LANGUAGE */}
+        <section className="w-full">
+          <div className="mb-3 flex items-center justify-between border-b border-[#1f293d] pb-2">
+            <div className="flex items-center gap-2">
+              <Compass className="h-4 w-4 text-emerald-400" />
+              <h2 className="text-sm sm:text-base font-black uppercase tracking-wider text-white">
+                Browse By Language
+              </h2>
+            </div>
+            <Link
+              href="/browse"
+              className="text-xs font-bold text-emerald-400 hover:text-emerald-300"
+            >
+              All Languages &rarr;
+            </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
             {mainLanguages.map((lang) => (
               <LanguageCard key={lang} language={lang} />
             ))}
           </div>
         </section>
 
-        {/* 6. Browse by Year */}
-        <section className="rounded-2xl border border-gray-900 bg-gray-900/30 p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Calendar className="h-5 w-5 text-amber-500" />
-            <h2 className="text-lg sm:text-xl font-bold text-white">Browse by Year</h2>
+        {/* 8. BROWSE BY YEAR */}
+        <section className="rounded-lg border border-[#1f293d] bg-[#0d121c] p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Calendar className="h-4 w-4 text-amber-400" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-white">
+              Browse By Release Year
+            </h2>
           </div>
-          <div className="flex flex-wrap gap-2.5">
+          <div className="flex flex-wrap gap-2">
             {years.map((year) => (
               <Link
                 key={year}
                 href={`/browse?year=${year}`}
-                className="rounded-xl border border-gray-800 bg-gray-900 px-5 py-2.5 text-sm font-semibold text-gray-300 hover:border-amber-500/50 hover:bg-gray-800 hover:text-white transition-all shadow-sm"
+                className="rounded bg-[#111722] border border-[#1f293d] hover:border-emerald-500/50 hover:bg-[#192233] px-4 py-2 text-xs font-bold text-gray-200 hover:text-emerald-400 transition-colors"
               >
-                {year}
+                {year} Movies
               </Link>
             ))}
             <Link
               href="/browse"
-              className="rounded-xl border border-gray-800 bg-gray-900/50 px-5 py-2.5 text-sm font-medium text-gray-400 hover:text-white transition-colors"
+              className="rounded bg-[#182130] border border-[#2d3b55] px-4 py-2 text-xs font-bold text-gray-400 hover:text-white transition-colors"
             >
-              All Years &rarr;
+              All Past Years &rarr;
             </Link>
           </div>
         </section>
 
-        {/* 7. Browse by Genre */}
-        <section>
-          <div className="flex items-center gap-2 mb-4">
-            <Film className="h-5 w-5 text-rose-500" />
-            <h2 className="text-lg sm:text-xl font-bold text-white">Browse by Genre</h2>
+        {/* 9. BROWSE BY GENRE */}
+        <section className="rounded-lg border border-[#1f293d] bg-[#0d121c] p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Film className="h-4 w-4 text-emerald-400" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-white">
+              Browse By Genre
+            </h2>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {GENRES.map((genre) => (
               <Link
                 key={genre}
                 href={`/browse?genre=${encodeURIComponent(genre)}`}
-                className="rounded-lg border border-gray-800/80 bg-gray-900/90 px-3.5 py-1.5 text-xs font-medium text-gray-300 hover:border-rose-500/50 hover:bg-rose-950/20 hover:text-white transition-colors"
+                className="rounded bg-[#111722] border border-[#1f293d] hover:border-emerald-500/50 px-3 py-1.5 text-xs font-semibold text-gray-300 hover:text-emerald-400 transition-colors"
               >
                 {genre}
               </Link>

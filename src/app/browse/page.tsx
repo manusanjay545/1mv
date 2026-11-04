@@ -2,6 +2,8 @@
 
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 import {
   Filter,
   Search,
@@ -11,10 +13,17 @@ import {
   ChevronRight,
   Film,
   RotateCcw,
+  LayoutGrid,
+  List,
+  Calendar,
+  HardDrive,
+  Download,
 } from 'lucide-react';
 import MovieCard from '@/components/MovieCard';
 import MovieCardSkeleton from '@/components/MovieCardSkeleton';
+import DownloadButton from '@/components/DownloadButton';
 import { LANGUAGES, GENRES, CATEGORIES, getYearRange, type Movie } from '@/types';
+import { formatRelativeTime } from '@/lib/utils';
 
 function BrowseContent() {
   const router = useRouter();
@@ -25,6 +34,7 @@ function BrowseContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // Filter states
   const search = searchParams.get('search') || '';
@@ -116,53 +126,85 @@ function BrowseContent() {
   const years = getYearRange();
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-20">
+    <div className="min-h-screen bg-[#0b0e14] pb-20">
       {/* Header bar with active filter status */}
-      <div className="border-b border-gray-900 bg-gray-900/40">
-        <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div className="border-b border-[#1f293d] bg-[#0d121c]">
+        <div className="mx-auto max-w-7xl px-3 sm:px-6 py-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                {language
-                  ? `${language} Movies & Series`
-                  : category
-                  ? `${category} Catalogue`
-                  : search
-                  ? `Search: "${search}"`
-                  : 'All Movies & Series'}
+              <h1 className="text-xl sm:text-2xl font-black text-white uppercase tracking-wider flex items-center gap-2">
+                <span>
+                  {language
+                    ? `${language} Movies & Series`
+                    : category
+                    ? `${category} Catalogue`
+                    : search
+                    ? `Search: "${search}"`
+                    : 'All Movie & Series Releases'}
+                </span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  {total} Titles
+                </span>
               </h1>
               <p className="mt-1 text-xs text-gray-400">
-                {loading ? 'Searching catalogue...' : `Showing ${movies.length} of ${total} titles available`}
+                {loading
+                  ? 'Searching catalogue index...'
+                  : `Showing page ${page} of ${totalPages} • Verified Fast Download Links`}
               </p>
             </div>
 
-            {/* Mobile filter toggle + Desktop sort */}
-            <div className="flex items-center gap-3">
+            {/* View Mode & Sort Controls */}
+            <div className="flex items-center gap-2">
+              {/* Toggle Grid / List view */}
+              <div className="flex items-center rounded-lg border border-[#1f293d] bg-[#111722] p-1">
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded text-xs transition-colors ${
+                    viewMode === 'grid'
+                      ? 'bg-emerald-500 text-black font-bold'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  aria-label="Grid view"
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded text-xs transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-emerald-500 text-black font-bold'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  aria-label="List view"
+                >
+                  <List className="h-4 w-4" />
+                </button>
+              </div>
+
+              {/* Mobile Filter Toggle */}
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="lg:hidden inline-flex items-center gap-2 rounded-xl border border-gray-800 bg-gray-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-gray-800"
+                className="lg:hidden inline-flex items-center gap-1.5 rounded-lg border border-[#1f293d] bg-[#111722] px-3 py-1.5 text-xs font-bold text-white hover:bg-[#192233]"
               >
-                <SlidersHorizontal className="h-4 w-4 text-rose-500" />
-                <span>Filters {hasActiveFilters && '(Active)'}</span>
+                <SlidersHorizontal className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Filters {hasActiveFilters && '(•)'}</span>
               </button>
 
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-gray-500 hidden sm:inline">Sort:</span>
-                <select
-                  value={sort}
-                  onChange={(e) => updateFilter('sort', e.target.value)}
-                  className="rounded-xl border border-gray-800 bg-gray-900 px-3 py-2 text-xs font-medium text-gray-200 outline-none focus:border-rose-500"
-                >
-                  <option value="newest">Newest First</option>
-                  <option value="popular">Most Popular</option>
-                  <option value="oldest">Oldest First</option>
-                </select>
-              </div>
+              {/* Sort Selector */}
+              <select
+                value={sort}
+                onChange={(e) => updateFilter('sort', e.target.value)}
+                className="rounded-lg border border-[#1f293d] bg-[#111722] px-3 py-2 text-xs font-bold text-gray-200 outline-none focus:border-emerald-500"
+              >
+                <option value="newest">Newest First</option>
+                <option value="popular">Most Popular</option>
+                <option value="oldest">Oldest First</option>
+              </select>
 
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="inline-flex items-center gap-1 rounded-xl border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/20"
+                  className="inline-flex items-center gap-1 rounded-lg border border-red-500/30 bg-red-500/10 px-2.5 py-2 text-xs font-bold text-red-400 hover:bg-red-500/20"
                 >
                   <RotateCcw className="h-3 w-3" />
                   <span className="hidden sm:inline">Reset</span>
@@ -173,34 +215,34 @@ function BrowseContent() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 pt-5">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Filters Sidebar */}
           <aside
             className={`lg:block ${
               sidebarOpen ? 'block' : 'hidden'
-            } rounded-2xl border border-gray-900 bg-gray-900/50 p-5 backdrop-blur-sm self-start`}
+            } rounded-lg border border-[#1f293d] bg-[#0d121c] p-4 self-start`}
           >
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-wider">
-                <Filter className="h-4 w-4 text-rose-500" />
-                <span>Filters</span>
+            <div className="flex items-center justify-between mb-4 border-b border-[#1f293d] pb-2">
+              <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-white">
+                <Filter className="h-3.5 w-3.5 text-emerald-400" />
+                <span>Filter Catalogue</span>
               </div>
               {hasActiveFilters && (
                 <button
                   onClick={clearAllFilters}
-                  className="text-xs text-rose-400 hover:text-rose-300 transition-colors"
+                  className="text-[11px] font-bold text-red-400 hover:text-red-300"
                 >
-                  Clear all
+                  Clear All
                 </button>
               )}
             </div>
 
-            <div className="space-y-5 text-sm">
-              {/* Search input */}
+            <div className="space-y-4 text-xs">
+              {/* Keyword Search */}
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
-                  Keyword Search
+                <label className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
+                  Search Keyword
                 </label>
                 <form
                   onSubmit={(e) => {
@@ -213,10 +255,10 @@ function BrowseContent() {
                     type="text"
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    placeholder="Title or keywords..."
-                    className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2 pl-9 text-xs text-white placeholder-gray-500 outline-none focus:border-rose-500"
+                    placeholder="Search movie title..."
+                    className="w-full rounded-md border border-[#1f293d] bg-[#111722] px-3 py-2 pl-8 text-xs text-white placeholder-gray-500 outline-none focus:border-emerald-500"
                   />
-                  <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-gray-500" />
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-gray-400" />
                   {searchInput && (
                     <button
                       type="button"
@@ -224,9 +266,9 @@ function BrowseContent() {
                         setSearchInput('');
                         updateFilter('search', '');
                       }}
-                      className="absolute right-2.5 top-2.5 text-gray-500 hover:text-gray-300"
+                      className="absolute right-2.5 top-2.5 text-gray-400 hover:text-white"
                     >
-                      <X className="h-3.5 w-3.5" />
+                      <X className="h-3 w-3" />
                     </button>
                   )}
                 </form>
@@ -234,13 +276,13 @@ function BrowseContent() {
 
               {/* Language */}
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
                   Language
                 </label>
                 <select
                   value={language}
                   onChange={(e) => updateFilter('language', e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2 text-xs text-white outline-none focus:border-rose-500"
+                  className="w-full rounded-md border border-[#1f293d] bg-[#111722] px-3 py-2 text-xs font-medium text-white outline-none focus:border-emerald-500"
                 >
                   <option value="">All Languages</option>
                   {LANGUAGES.map((l) => (
@@ -253,13 +295,13 @@ function BrowseContent() {
 
               {/* Category */}
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
                   Category
                 </label>
                 <select
                   value={category}
                   onChange={(e) => updateFilter('category', e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2 text-xs text-white outline-none focus:border-rose-500"
+                  className="w-full rounded-md border border-[#1f293d] bg-[#111722] px-3 py-2 text-xs font-medium text-white outline-none focus:border-emerald-500"
                 >
                   <option value="">All Categories</option>
                   {CATEGORIES.map((c) => (
@@ -272,13 +314,13 @@ function BrowseContent() {
 
               {/* Genre */}
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
                   Genre
                 </label>
                 <select
                   value={genre}
                   onChange={(e) => updateFilter('genre', e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2 text-xs text-white outline-none focus:border-rose-500"
+                  className="w-full rounded-md border border-[#1f293d] bg-[#111722] px-3 py-2 text-xs font-medium text-white outline-none focus:border-emerald-500"
                 >
                   <option value="">All Genres</option>
                   {GENRES.map((g) => (
@@ -291,13 +333,13 @@ function BrowseContent() {
 
               {/* Release Year */}
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider block mb-2">
+                <label className="text-[11px] font-bold uppercase text-gray-400 block mb-1.5">
                   Release Year
                 </label>
                 <select
                   value={year}
                   onChange={(e) => updateFilter('year', e.target.value)}
-                  className="w-full rounded-xl border border-gray-800 bg-gray-900 px-3.5 py-2 text-xs text-white outline-none focus:border-rose-500"
+                  className="w-full rounded-md border border-[#1f293d] bg-[#111722] px-3 py-2 text-xs font-medium text-white outline-none focus:border-emerald-500"
                 >
                   <option value="">All Years</option>
                   {years.map((y) => (
@@ -310,82 +352,169 @@ function BrowseContent() {
             </div>
           </aside>
 
-          {/* Main Results Grid */}
+          {/* Main Results Display */}
           <main className="lg:col-span-3">
             {loading ? (
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
                 {Array.from({ length: 12 }).map((_, i) => (
                   <MovieCardSkeleton key={i} />
                 ))}
               </div>
             ) : movies.length === 0 ? (
-              <div className="rounded-2xl border border-gray-900 bg-gray-900/30 p-12 text-center">
-                <Film className="h-12 w-12 text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-white mb-1">No movies match your filters</h3>
-                <p className="text-sm text-gray-400 max-w-sm mx-auto mb-6">
-                  Try adjusting your language, genre or keyword search to see more titles.
+              <div className="rounded-lg border border-[#1f293d] bg-[#0d121c] p-12 text-center">
+                <Film className="h-10 w-10 text-gray-600 mx-auto mb-3" />
+                <h3 className="text-base font-bold text-white mb-1">
+                  No titles match your selected filters
+                </h3>
+                <p className="text-xs text-gray-400 max-w-sm mx-auto mb-4">
+                  Try clearing some filters or searching for a different language or movie name.
                 </p>
                 <button
                   onClick={clearAllFilters}
-                  className="rounded-xl bg-rose-600 px-5 py-2.5 text-xs font-semibold text-white hover:bg-rose-500 transition-colors"
+                  className="rounded bg-emerald-500 px-4 py-2 text-xs font-bold text-black hover:bg-emerald-400"
                 >
-                  Clear Filters
+                  Reset All Filters
                 </button>
               </div>
+            ) : viewMode === 'grid' ? (
+              /* GRID VIEW */
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4">
+                {movies.map((movie) => (
+                  <MovieCard key={movie.id} movie={movie} />
+                ))}
+              </div>
             ) : (
-              <>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:gap-4 lg:grid-cols-4">
-                  {movies.map((movie) => (
-                    <MovieCard key={movie.id} movie={movie} />
-                  ))}
+              /* DENSE 1TamilMV LIST VIEW */
+              <div className="rounded-lg border border-[#1f293d] bg-[#0d121c] divide-y divide-[#1f293d] overflow-hidden">
+                {movies.map((movie) => {
+                  const quality = movie.quality || '1080p HQ';
+                  const size = movie.file_size || '1.4 GB';
+                  const poster = movie.poster_url || '/placeholder-poster.svg';
+
+                  return (
+                    <div
+                      key={movie.id}
+                      className="group flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:px-4 sm:py-3 hover:bg-[#121824] transition-colors gap-3"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <Link
+                          href={`/movie/${movie.slug}`}
+                          className="relative h-14 w-10 shrink-0 overflow-hidden rounded bg-[#1f293d] border border-[#2d3b55]"
+                        >
+                          <Image
+                            src={poster}
+                            alt={movie.title}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                        </Link>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex flex-wrap items-center gap-1.5 mb-1">
+                            {movie.language && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-black/80 border border-white/10 text-gray-300">
+                                {movie.language}
+                              </span>
+                            )}
+                            <span className="text-[10px] font-black px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                              {quality}
+                            </span>
+                            {movie.release_year && (
+                              <span className="text-[10px] font-semibold text-amber-400">
+                                ({movie.release_year})
+                              </span>
+                            )}
+                          </div>
+
+                          <Link
+                            href={`/movie/${movie.slug}`}
+                            className="block text-xs sm:text-sm font-bold text-gray-200 group-hover:text-emerald-400 transition-colors line-clamp-1"
+                          >
+                            {movie.title}{' '}
+                            <span className="font-normal text-gray-400 text-xs">
+                              [{movie.language || 'Multi'} - {quality} - {size}]
+                            </span>
+                          </Link>
+
+                          <div className="flex items-center gap-3 mt-1 text-[11px] text-gray-500">
+                            <span className="flex items-center gap-1 text-gray-400">
+                              <Calendar className="h-3 w-3 text-gray-500" />
+                              {movie.published_at ? formatRelativeTime(movie.published_at) : 'Recent'}
+                            </span>
+                            <span className="flex items-center gap-1 text-emerald-400 font-medium">
+                              <HardDrive className="h-3 w-3" />
+                              {size}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                        <Link
+                          href={`/movie/${movie.slug}`}
+                          className="px-3 py-1.5 rounded bg-[#182130] hover:bg-[#1f293d] border border-[#2d3b55] text-xs font-semibold text-gray-300 hover:text-white"
+                        >
+                          View
+                        </Link>
+                        <DownloadButton
+                          movieId={movie.id}
+                          label="Download"
+                          size="compact"
+                          showNotice={false}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-1.5">
+                <button
+                  onClick={() => setPage(page - 1)}
+                  disabled={page <= 1}
+                  className="rounded-lg border border-[#1f293d] bg-[#111722] p-2 text-gray-300 hover:bg-[#192233] disabled:opacity-30 disabled:pointer-events-none"
+                  aria-label="Previous page"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+
+                <div className="flex items-center gap-1 text-xs">
+                  {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
+                    let p = i + 1;
+                    if (totalPages > 5 && page > 3) {
+                      p = page - 2 + i;
+                      if (p > totalPages) p = totalPages - (4 - i);
+                    }
+                    return (
+                      <button
+                        key={p}
+                        onClick={() => setPage(p)}
+                        className={`h-8 w-8 rounded-lg font-bold text-xs transition-colors ${
+                          page === p
+                            ? 'bg-emerald-500 text-black shadow-sm'
+                            : 'border border-[#1f293d] bg-[#111722] text-gray-400 hover:text-white hover:bg-[#192233]'
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                {/* Pagination */}
-                {totalPages > 1 && (
-                  <div className="mt-12 flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => setPage(page - 1)}
-                      disabled={page <= 1}
-                      className="rounded-xl border border-gray-800 bg-gray-900 p-2.5 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
-                      aria-label="Previous page"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-
-                    <div className="flex items-center gap-1 text-xs">
-                      {Array.from({ length: Math.min(5, totalPages) }).map((_, i) => {
-                        let p = i + 1;
-                        if (totalPages > 5 && page > 3) {
-                          p = page - 2 + i;
-                          if (p > totalPages) p = totalPages - (4 - i);
-                        }
-                        return (
-                          <button
-                            key={p}
-                            onClick={() => setPage(p)}
-                            className={`h-9 w-9 rounded-xl font-semibold transition-colors ${
-                              page === p
-                                ? 'bg-rose-600 text-white'
-                                : 'border border-gray-800 bg-gray-900 text-gray-400 hover:text-white hover:bg-gray-800'
-                            }`}
-                          >
-                            {p}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <button
-                      onClick={() => setPage(page + 1)}
-                      disabled={page >= totalPages}
-                      className="rounded-xl border border-gray-800 bg-gray-900 p-2.5 text-gray-300 hover:bg-gray-800 hover:text-white disabled:opacity-30 disabled:pointer-events-none"
-                      aria-label="Next page"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                )}
-              </>
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={page >= totalPages}
+                  className="rounded-lg border border-[#1f293d] bg-[#111722] p-2 text-gray-300 hover:bg-[#192233] disabled:opacity-30 disabled:pointer-events-none"
+                  aria-label="Next page"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
             )}
           </main>
         </div>
@@ -398,8 +527,8 @@ export default function BrowsePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-950 p-8 text-center text-gray-500">
-          Loading catalogue...
+        <div className="min-h-screen bg-[#0b0e14] p-8 text-center text-gray-500 text-xs">
+          Loading movie catalogue...
         </div>
       }
     >
@@ -407,4 +536,3 @@ export default function BrowsePage() {
     </Suspense>
   );
 }
-

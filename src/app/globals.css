@@ -1,44 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  --color-accent: #e94560;
-  --color-accent-hover: #d63d56;
+  --color-bg-main: #0b0e14;
+  --color-bg-card: #111722;
+  --color-bg-hover: #192233;
+  --color-border: #1f293d;
+  --color-border-bright: #2d3b55;
+  --color-accent: #00d26a;
+  --color-accent-hover: #00e676;
 }
 
 body {
-  background: #030712;
-  color: #f3f4f6;
-  font-family: var(--font-inter), system-ui, sans-serif;
+  background-color: #0b0e14;
+  color: #e2e8f0;
+  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
 }
+
+/* Custom accent utility classes for instant theme consistency */
+.text-accent { color: #00d26a !important; }
+.hover\:text-accent-hover:hover { color: #00e676 !important; }
+.bg-accent { background-color: #00d26a !important; }
+.hover\:bg-accent-hover:hover { background-color: #00e676 !important; }
+.border-accent { border-color: #00d26a !important; }
+.ring-accent { --tw-ring-color: #00d26a !important; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #111827;
+  background: #0b0e14;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 4px;
+  background: #1f293d;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4b5563;
+  background: #2d3b55;
 }
 
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #374151 #111827;
+  scrollbar-color: #1f293d #0b0e14;
 }
 
-/* Smooth transitions */
-* {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+/* Selection */
+::selection {
+  background: #00d26a;
+  color: #000;
+}
+
+/* Marquee Animation */
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 28s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 
 /* Hide scrollbar for horizontal scroll containers */
@@ -49,4 +81,14 @@ body {
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Blinking dot for LIVE updates */
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.9); }
+}
+
+.animate-live {
+  animation: livePulse 1.8s ease-in-out infinite;
 }

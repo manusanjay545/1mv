@@ -8,7 +8,7 @@ interface DownloadButtonProps {
   destinationId?: string;
   originalUrl?: string;
   label?: string;
-  size?: 'normal' | 'large';
+  size?: 'compact' | 'normal' | 'large';
   className?: string;
   showNotice?: boolean;
 }
@@ -50,9 +50,26 @@ export default function DownloadButton({
       // Fallback directly to the required ShrinkMe URL
       window.open('https://shrinkme.click/OXfgZ7I', '_blank', 'noopener,noreferrer');
     } finally {
-      setTimeout(() => setLoading(false), 1000);
+      setTimeout(() => setLoading(false), 800);
     }
   };
+
+  if (size === 'compact') {
+    return (
+      <button
+        onClick={handleDownload}
+        disabled={loading}
+        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition-transform active:scale-95 disabled:opacity-60 shadow-sm ${className}`}
+      >
+        {loading ? (
+          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+        ) : (
+          <Download className="h-3.5 w-3.5" />
+        )}
+        <span>{label}</span>
+      </button>
+    );
+  }
 
   const isLarge = size === 'large';
 
@@ -61,39 +78,41 @@ export default function DownloadButton({
       <button
         onClick={handleDownload}
         disabled={loading}
-        className={`group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-xl font-semibold text-white transition-all duration-300 shadow-lg active:scale-95 disabled:opacity-70 ${
+        className={`group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-lg font-black transition-all duration-200 active:scale-95 disabled:opacity-70 shadow-lg ${
           isLarge
-            ? 'w-full max-w-md px-8 py-4 text-lg bg-gradient-to-r from-red-600 via-rose-600 to-amber-600 hover:from-red-500 hover:via-rose-500 hover:to-amber-500 shadow-red-900/40 hover:shadow-red-600/50 hover:scale-[1.02]'
-            : 'px-5 py-2.5 text-sm bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 shadow-red-900/30 hover:scale-[1.02]'
+            ? 'w-full max-w-md px-8 py-4 text-base sm:text-lg bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-950/40 hover:shadow-emerald-600/50 hover:scale-[1.01]'
+            : 'px-5 py-2.5 text-xs sm:text-sm bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-950/30'
         }`}
       >
-        {/* Glow effect */}
-        <span className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out pointer-events-none" />
-
         {loading ? (
           <>
             <Loader2 className={`${isLarge ? 'h-6 w-6' : 'h-4 w-4'} animate-spin`} />
-            <span>Redirecting...</span>
+            <span>Generating Link...</span>
           </>
         ) : (
           <>
-            <Download className={`${isLarge ? 'h-6 w-6' : 'h-4 w-4'} transition-transform group-hover:translate-y-0.5`} />
+            <Download
+              className={`${
+                isLarge ? 'h-6 w-6' : 'h-4 w-4'
+              } transition-transform group-hover:translate-y-0.5`}
+            />
             <span>{label}</span>
-            <ExternalLink className={`${isLarge ? 'h-4 w-4' : 'h-3.5 w-3.5'} opacity-70`} />
+            <ExternalLink
+              className={`${isLarge ? 'h-4 w-4' : 'h-3.5 w-3.5'} opacity-75`}
+            />
           </>
         )}
       </button>
 
       {showNotice && (
-        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-xs text-gray-400">
+        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-[11px] text-gray-400">
           <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
           <span>
-            Sponsored link: You will be redirected via our partner{' '}
-            <span className="text-gray-300 font-medium">ShrinkMe</span> to support free hosting.
+            Sponsored Fast Download: Protected via{' '}
+            <strong className="text-emerald-400">ShrinkMe</strong> to support our servers.
           </span>
         </div>
       )}
     </div>
   );
 }
-

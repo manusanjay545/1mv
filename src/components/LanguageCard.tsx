@@ -1,22 +1,27 @@
 import Link from 'next/link';
+import { Film, ChevronRight } from 'lucide-react';
 
 interface LanguageCardProps {
   language: string;
 }
 
-const LANGUAGE_COLORS: Record<string, { from: string; to: string }> = {
-  Tamil: { from: 'from-red-900/60', to: 'to-orange-900/40' },
-  Telugu: { from: 'from-yellow-900/60', to: 'to-amber-900/40' },
-  Malayalam: { from: 'from-green-900/60', to: 'to-emerald-900/40' },
-  Kannada: { from: 'from-purple-900/60', to: 'to-violet-900/40' },
-  Hindi: { from: 'from-blue-900/60', to: 'to-cyan-900/40' },
-  English: { from: 'from-indigo-900/60', to: 'to-sky-900/40' },
+const LANGUAGE_META: Record<
+  string,
+  { label: string; tag: string; color: string }
+> = {
+  Tamil: { label: 'Tamil Movies', tag: 'தமிழ்', color: 'border-red-500/40 text-red-400' },
+  Telugu: { label: 'Telugu Movies', tag: 'తెలుగు', color: 'border-amber-500/40 text-amber-400' },
+  Malayalam: { label: 'Malayalam Movies', tag: 'മലയാളം', color: 'border-emerald-500/40 text-emerald-400' },
+  Kannada: { label: 'Kannada Movies', tag: 'ಕನ್ನಡ', color: 'border-purple-500/40 text-purple-400' },
+  Hindi: { label: 'Hindi Bollywood', tag: 'हिंदी', color: 'border-blue-500/40 text-blue-400' },
+  English: { label: 'English & Dubbed', tag: 'Hollywood', color: 'border-cyan-500/40 text-cyan-400' },
 };
 
 export default function LanguageCard({ language }: LanguageCardProps) {
-  const colors = LANGUAGE_COLORS[language] ?? {
-    from: 'from-gray-800',
-    to: 'to-gray-900',
+  const meta = LANGUAGE_META[language] ?? {
+    label: `${language} Releases`,
+    tag: language,
+    color: 'border-gray-700 text-gray-300',
   };
 
   return (
@@ -24,14 +29,21 @@ export default function LanguageCard({ language }: LanguageCardProps) {
       href={`/browse?language=${encodeURIComponent(language)}`}
       className="group block"
     >
-      <div
-        className={`relative overflow-hidden rounded-xl bg-gradient-to-br ${colors.from} ${colors.to} p-6 ring-1 ring-white/10 transition-all duration-300 group-hover:ring-accent/50 group-hover:scale-[1.03]`}
-      >
-        <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-white/5 transition-transform duration-500 group-hover:scale-150" />
-        <h3 className="relative text-lg font-bold text-white">{language}</h3>
-        <p className="relative mt-1 text-sm text-gray-400">
-          Browse {language} movies
-        </p>
+      <div className="relative overflow-hidden rounded-lg bg-[#111722] border border-[#1f293d] hover:border-emerald-500/60 p-3.5 transition-all duration-200 hover:-translate-y-0.5 shadow-md">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-xs font-black uppercase tracking-wider text-white group-hover:text-emerald-400 transition-colors">
+            {language}
+          </span>
+          <span
+            className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-black/60 border ${meta.color}`}
+          >
+            {meta.tag}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-[11px] text-gray-400 mt-2 pt-2 border-t border-[#1f293d]">
+          <span>View Catalogue</span>
+          <ChevronRight className="h-3.5 w-3.5 text-gray-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
+        </div>
       </div>
     </Link>
   );

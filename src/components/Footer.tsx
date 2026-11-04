@@ -1,86 +1,117 @@
 import Link from 'next/link';
-import { Film, Shield } from 'lucide-react';
+import { Film, Shield, Lock, Radio, Server } from 'lucide-react';
 
 export default function Footer() {
   return (
-    <footer className="border-t border-gray-800/80 bg-gray-950">
-      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div className="md:col-span-2 flex flex-col gap-3">
-            <Link href="/" className="flex items-center gap-2">
-              <Film className="h-6 w-6 text-rose-500" />
-              <span className="text-xl font-bold text-white tracking-tight">
-                Movie<span className="text-rose-500">Vault</span>
+    <footer className="border-t border-[#1f293d] bg-[#070a0f] text-xs">
+      <div className="mx-auto max-w-7xl px-3 sm:px-6 py-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-8">
+          {/* Col 1: Branding & Description */}
+          <div className="md:col-span-2 space-y-2">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="flex items-center justify-center h-7 w-7 rounded bg-red-600 text-white font-black text-sm">
+                1
+              </div>
+              <span className="text-lg font-black tracking-tight text-white">
+                MOVIE<span className="text-emerald-400">VAULT</span>
               </span>
             </Link>
-            <p className="text-sm text-gray-400 max-w-md">
-              A high-performance movie & web series catalogue inspired by modern dark directory layouts.
-              Browse releases across Tamil, Telugu, Malayalam, Kannada, Hindi and English.
+            <p className="text-gray-400 text-xs max-w-md leading-relaxed">
+              Official catalogue portal for South Indian &amp; Bollywood movie releases.
+              Direct links, fast resumable downloads, and automated updates every 15 minutes.
             </p>
-            <div className="flex items-center gap-2 text-xs text-gray-500 mt-2">
-              <Shield className="h-4 w-4 text-emerald-500" />
-              <span>Compliant indexing & authorized redistribution metadata</span>
+            <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-500 pt-1">
+              <span className="flex items-center gap-1 text-emerald-400">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                Auto 15m Sync Active
+              </span>
+              <span className="flex items-center gap-1 text-gray-400">
+                <Shield className="h-3 w-3 text-gray-400" />
+                ShrinkMe Protected
+              </span>
+              <span className="flex items-center gap-1 text-gray-400">
+                <Server className="h-3 w-3 text-gray-400" />
+                Vercel + Supabase
+              </span>
             </div>
           </div>
 
+          {/* Col 2: Movie Categories */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-200 uppercase tracking-wider mb-3">
-              Explore
+            <h4 className="text-xs font-black text-gray-200 uppercase tracking-wider mb-2.5">
+              Categories
             </h4>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-1.5 text-xs text-gray-400">
               <li>
-                <Link href="/" className="hover:text-rose-400 transition-colors">
-                  Home
+                <Link href="/browse?language=Tamil" className="hover:text-emerald-400 transition-colors">
+                  Tamil Movies
                 </Link>
               </li>
               <li>
-                <Link href="/browse?sort=newest" className="hover:text-rose-400 transition-colors">
-                  Latest Releases
+                <Link href="/browse?language=Telugu" className="hover:text-emerald-400 transition-colors">
+                  Telugu Movies
                 </Link>
               </li>
               <li>
-                <Link href="/browse?category=Web+Series" className="hover:text-rose-400 transition-colors">
+                <Link href="/browse?language=Malayalam" className="hover:text-emerald-400 transition-colors">
+                  Malayalam Movies
+                </Link>
+              </li>
+              <li>
+                <Link href="/browse?language=Hindi" className="hover:text-emerald-400 transition-colors">
+                  Hindi Dubbed
+                </Link>
+              </li>
+              <li>
+                <Link href="/browse?category=Web+Series" className="hover:text-emerald-400 transition-colors">
                   Web Series
-                </Link>
-              </li>
-              <li>
-                <Link href="/browse?sort=popular" className="hover:text-rose-400 transition-colors">
-                  Trending
                 </Link>
               </li>
             </ul>
           </div>
 
+          {/* Col 3: Portal Links */}
           <div>
-            <h4 className="text-sm font-semibold text-gray-200 uppercase tracking-wider mb-3">
-              Management
+            <h4 className="text-xs font-black text-gray-200 uppercase tracking-wider mb-2.5">
+              Portal Links
             </h4>
-            <ul className="space-y-2 text-sm text-gray-400">
+            <ul className="space-y-1.5 text-xs text-gray-400">
               <li>
-                <Link href="/admin" className="hover:text-rose-400 transition-colors">
-                  Admin Dashboard
+                <Link href="/browse?sort=newest" className="hover:text-emerald-400 transition-colors">
+                  Latest Releases
                 </Link>
               </li>
               <li>
-                <Link href="/admin/sync" className="hover:text-rose-400 transition-colors">
+                <Link href="/browse?sort=popular" className="hover:text-emerald-400 transition-colors">
+                  Top Trending
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin" className="hover:text-emerald-400 transition-colors">
+                  Admin Management
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin/sync" className="hover:text-emerald-400 transition-colors">
                   Sync Settings
                 </Link>
               </li>
               <li>
-                <Link href="/admin/analytics" className="hover:text-rose-400 transition-colors">
-                  Monetization & Clicks
+                <Link href="/admin/analytics" className="hover:text-emerald-400 transition-colors">
+                  Monetization Clicks
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        <div className="border-t border-gray-900 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4">
+        {/* Disclaimer / Bottom Bar */}
+        <div className="border-t border-[#1f293d] pt-4 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-2">
           <p>
-            &copy; {new Date().getFullYear()} MovieVault. All rights reserved.
+            &copy; {new Date().getFullYear()} MovieVault &bull; All catalogue metadata is aggregated for indexing purposes only.
           </p>
-          <p className="text-center sm:text-right text-gray-600">
-            Powered by Next.js & Supabase &bull; Automated 15m Sync &bull; ShrinkMe Integration
+          <p className="text-gray-400">
+            Powered by Next.js &bull; Fast CDN &bull; 15-Minute Sync Engine
           </p>
         </div>
       </div>
