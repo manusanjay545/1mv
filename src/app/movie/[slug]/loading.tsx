@@ -18,3 +18,4 @@ export default function MovieDetailLoading() {
     </div>
   );
 }
+
