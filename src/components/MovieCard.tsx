@@ -2,103 +2,122 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Film, Eye, Download, HardDrive, Calendar } from 'lucide-react';
+import { Calendar, Download, HardDrive } from 'lucide-react';
 import type { Movie } from '@/types';
 import { formatRelativeTime } from '@/lib/utils';
 
 interface MovieCardProps {
   movie: Movie;
-  compact?: boolean;
 }
 
-export default function MovieCard({ movie, compact = false }: MovieCardProps) {
+export default function MovieCard({ movie }: MovieCardProps) {
   const posterSrc = movie.poster_url || '/placeholder-poster.svg';
   const quality = movie.quality || '1080p HD';
   const fileSize = movie.file_size || '1.4 GB';
 
+  const qualityColor =
+    quality.includes('4K') || quality.includes('2160')
+      ? { bg: '#f59e0b', color: '#000' }
+      : quality.includes('1080')
+      ? { bg: '#00d26a', color: '#000' }
+      : quality.includes('720')
+      ? { bg: '#2563eb', color: '#fff' }
+      : { bg: '#dc2626', color: '#fff' };
+
   return (
-    <Link href={`/movie/${movie.slug}`} className="group block h-full">
-      <div className="relative flex flex-col h-full overflow-hidden rounded-lg bg-[#111722] border border-[#1f293d] hover:border-emerald-500/60 transition-all duration-200 hover:-translate-y-1 shadow-md hover:shadow-emerald-950/20">
-        {/* Poster Container */}
-        <div className="relative aspect-[2/3] w-full overflow-hidden bg-[#0b0e14]">
+    <Link href={`/movie/${movie.slug}`} style={{ display: 'block', textDecoration: 'none', height: '100%' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          height: '100%',
+          overflow: 'hidden',
+          borderRadius: '8px',
+          backgroundColor: '#111722',
+          border: '1px solid #1f293d',
+          transition: 'border-color 0.2s, transform 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,210,106,0.5)';
+          (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLElement).style.borderColor = '#1f293d';
+          (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+        }}
+      >
+        {/* Poster */}
+        <div style={{ position: 'relative', width: '100%', aspectRatio: '2/3', overflow: 'hidden', backgroundColor: '#0b0e14' }}>
           <Image
             src={posterSrc}
             alt={movie.title}
             fill
             sizes="(max-width: 640px) 48vw, (max-width: 768px) 30vw, (max-width: 1024px) 20vw, 15vw"
-            className="object-cover transition-transform duration-300 group-hover:scale-105"
+            className="object-cover"
             unoptimized
+            style={{ transition: 'transform 0.3s' }}
           />
 
-          {/* Top Badges */}
-          <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between pointer-events-none gap-1">
-            {/* Quality Badge */}
-            <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-black uppercase tracking-tight shadow-md ${
-                quality.includes('4K') || quality.includes('2160')
-                  ? 'bg-amber-500 text-black'
-                  : quality.includes('1080')
-                  ? 'bg-emerald-500 text-black'
-                  : quality.includes('720')
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-red-600 text-white'
-              }`}
-            >
-              {quality}
+          {/* Quality Badge */}
+          <span style={{
+            position: 'absolute', top: '6px', left: '6px',
+            borderRadius: '4px', padding: '2px 6px',
+            fontSize: '10px', fontWeight: 900, textTransform: 'uppercase',
+            letterSpacing: '0.02em',
+            backgroundColor: qualityColor.bg, color: qualityColor.color,
+            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+          }}>
+            {quality}
+          </span>
+
+          {/* Language / Series Badge */}
+          {movie.is_web_series ? (
+            <span style={{ position: 'absolute', top: '6px', right: '6px', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 900, textTransform: 'uppercase', backgroundColor: '#7c3aed', color: '#fff' }}>
+              SERIES
             </span>
+          ) : movie.language ? (
+            <span style={{ position: 'absolute', top: '6px', right: '6px', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.8)', color: '#e5e7eb', border: '1px solid rgba(255,255,255,0.1)' }}>
+              {movie.language}
+            </span>
+          ) : null}
 
-            {/* Language / Series badge */}
-            {movie.is_web_series ? (
-              <span className="rounded bg-purple-600 px-1.5 py-0.5 text-[10px] font-black uppercase text-white shadow-md">
-                SERIES
-              </span>
-            ) : movie.language ? (
-              <span className="rounded bg-black/80 backdrop-blur-sm border border-white/10 px-1.5 py-0.5 text-[10px] font-bold text-gray-200">
-                {movie.language}
-              </span>
-            ) : null}
-          </div>
-
-          {/* File Size Badge on bottom-right of poster */}
+          {/* File Size Badge */}
           {fileSize && (
-            <div className="absolute bottom-1.5 right-1.5 rounded bg-black/85 backdrop-blur-sm px-1.5 py-0.5 text-[10px] font-bold text-emerald-400 flex items-center gap-1 border border-emerald-500/30">
-              <HardDrive className="h-2.5 w-2.5" />
-              <span>{fileSize}</span>
+            <div style={{ position: 'absolute', bottom: '6px', right: '6px', borderRadius: '4px', padding: '2px 6px', fontSize: '10px', fontWeight: 700, backgroundColor: 'rgba(0,0,0,0.85)', color: '#00d26a', display: 'flex', alignItems: 'center', gap: '4px', border: '1px solid rgba(0,210,106,0.3)' }}>
+              <HardDrive style={{ width: '10px', height: '10px' }} />
+              {fileSize}
             </div>
           )}
 
-          {/* Dark gradient on bottom of poster */}
-          <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-[#111722] to-transparent pointer-events-none" />
+          {/* Bottom gradient */}
+          <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40px', background: 'linear-gradient(transparent, #111722)', pointerEvents: 'none' }} />
         </div>
 
-        {/* Content Box */}
-        <div className="flex flex-col flex-1 p-2.5 justify-between">
+        {/* Content */}
+        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, padding: '10px', justifyContent: 'space-between' }}>
           <div>
-            <h3 className="line-clamp-2 text-xs font-bold leading-tight text-gray-100 group-hover:text-emerald-400 transition-colors">
+            <h3 style={{ fontSize: '12px', fontWeight: 700, lineHeight: 1.3, color: '#f3f4f6', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
               {movie.title}
             </h3>
-
-            {/* Sub-info: Year & Genre */}
-            <div className="mt-1 flex items-center gap-1.5 text-[11px] text-gray-400">
+            <div style={{ marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#9ca3af' }}>
               {movie.release_year && (
-                <span className="font-semibold text-amber-400">({movie.release_year})</span>
+                <span style={{ fontWeight: 600, color: '#fbbf24' }}>({movie.release_year})</span>
               )}
               {movie.genre && movie.genre.length > 0 && (
-                <span className="truncate text-gray-400">&bull; {movie.genre[0]}</span>
+                <span style={{ color: '#9ca3af' }}>• {movie.genre[0]}</span>
               )}
             </div>
           </div>
 
-          {/* Footer Bar: Time / Views & Download Action */}
-          <div className="mt-2.5 pt-2 border-t border-[#1f293d] flex items-center justify-between text-[10px] text-gray-500">
-            <span className="flex items-center gap-1 text-gray-400">
-              <Calendar className="h-3 w-3 text-gray-500" />
+          {/* Footer */}
+          <div style={{ marginTop: '10px', paddingTop: '8px', borderTop: '1px solid #1f293d', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '10px', color: '#6b7280' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#9ca3af' }}>
+              <Calendar style={{ width: '12px', height: '12px', color: '#6b7280' }} />
               {movie.published_at ? formatRelativeTime(movie.published_at) : 'Recent'}
             </span>
-
-            <span className="text-emerald-400 font-bold group-hover:underline flex items-center gap-0.5">
-              <Download className="h-3 w-3" />
-              <span>Get</span>
+            <span style={{ color: '#00d26a', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '3px' }}>
+              <Download style={{ width: '12px', height: '12px' }} />
+              Get
             </span>
           </div>
         </div>

@@ -1,94 +1,68 @@
 @import "tailwindcss";
 
-:root {
-  --color-bg-main: #0b0e14;
-  --color-bg-card: #111722;
-  --color-bg-hover: #192233;
-  --color-border: #1f293d;
-  --color-border-bright: #2d3b55;
-  --color-accent: #00d26a;
-  --color-accent-hover: #00e676;
+@theme inline {
+  --color-dark-bg: #0b0e14;
+  --color-dark-card: #111722;
+  --color-dark-card-hover: #192233;
+  --color-dark-header: #121824;
+  --color-dark-border: #1f293d;
+  --color-dark-border-bright: #2d3b55;
+  --color-mv-green: #00d26a;
+  --color-mv-green-hover: #00e676;
 }
 
 body {
-  background-color: #0b0e14;
+  background-color: var(--color-dark-bg);
   color: #e2e8f0;
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 13px;
-  line-height: 1.5;
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
 }
-
-/* Custom accent utility classes for instant theme consistency */
-.text-accent { color: #00d26a !important; }
-.hover\:text-accent-hover:hover { color: #00e676 !important; }
-.bg-accent { background-color: #00d26a !important; }
-.hover\:bg-accent-hover:hover { background-color: #00e676 !important; }
-.border-accent { border-color: #00d26a !important; }
-.ring-accent { --tw-ring-color: #00d26a !important; }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #0b0e14;
+  background: var(--color-dark-bg);
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #1f293d;
+  background: var(--color-dark-border);
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #2d3b55;
+  background: var(--color-dark-border-bright);
 }
-
-/* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #1f293d #0b0e14;
+  scrollbar-color: var(--color-dark-border) var(--color-dark-bg);
 }
 
-/* Selection */
 ::selection {
-  background: #00d26a;
+  background: var(--color-mv-green);
   color: #000;
 }
 
-/* Marquee Animation */
+/* Marquee */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
 .animate-marquee {
   display: inline-flex;
   white-space: nowrap;
   animation: marquee 28s linear infinite;
 }
-
 .animate-marquee:hover {
   animation-play-state: paused;
 }
 
-/* Hide scrollbar for horizontal scroll containers */
+/* Hidden scrollbar */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
 .hide-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
-}
-
-/* Blinking dot for LIVE updates */
-@keyframes livePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.9); }
-}
-
-.animate-live {
-  animation: livePulse 1.8s ease-in-out infinite;
 }

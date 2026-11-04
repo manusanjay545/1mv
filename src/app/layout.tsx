@@ -28,9 +28,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} dark antialiased`}>
-      <body className="min-h-screen bg-surface text-text-primary flex flex-col font-sans">
+      <body className="min-h-screen bg-[#0b0e14] text-[#e2e8f0] flex flex-col font-sans selection:bg-emerald-500 selection:text-black overflow-x-hidden">
         <Header />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1 w-full">{children}</main>
         <Footer />
       </body>
     </html>

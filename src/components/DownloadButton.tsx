@@ -42,74 +42,102 @@ export default function DownloadButton({
 
       const data = await res.json();
       const targetUrl = data.shrinkmeUrl || 'https://shrinkme.click/OXfgZ7I';
-
-      // Open ShrinkMe advertising link in a new tab
       window.open(targetUrl, '_blank', 'noopener,noreferrer');
-    } catch (err) {
-      console.error('Download click error:', err);
-      // Fallback directly to the required ShrinkMe URL
+    } catch {
       window.open('https://shrinkme.click/OXfgZ7I', '_blank', 'noopener,noreferrer');
     } finally {
       setTimeout(() => setLoading(false), 800);
     }
   };
 
+  // COMPACT: small inline button
   if (size === 'compact') {
     return (
       <button
         onClick={handleDownload}
         disabled={loading}
-        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs transition-transform active:scale-95 disabled:opacity-60 shadow-sm ${className}`}
+        className={className}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 14px',
+          borderRadius: '6px',
+          backgroundColor: '#00d26a',
+          color: '#000',
+          fontWeight: 800,
+          fontSize: '12px',
+          border: 'none',
+          cursor: 'pointer',
+          whiteSpace: 'nowrap',
+          opacity: loading ? 0.6 : 1,
+        }}
       >
         {loading ? (
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
         ) : (
-          <Download className="h-3.5 w-3.5" />
+          <Download style={{ width: 14, height: 14 }} />
         )}
         <span>{label}</span>
       </button>
     );
   }
 
+  // NORMAL or LARGE
   const isLarge = size === 'large';
 
   return (
-    <div className={`flex flex-col items-center ${className}`}>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: isLarge ? '100%' : 'auto', maxWidth: isLarge ? '420px' : 'none' }} className={className}>
       <button
         onClick={handleDownload}
         disabled={loading}
-        className={`group relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-lg font-black transition-all duration-200 active:scale-95 disabled:opacity-70 shadow-lg ${
-          isLarge
-            ? 'w-full max-w-md px-8 py-4 text-base sm:text-lg bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-950/40 hover:shadow-emerald-600/50 hover:scale-[1.01]'
-            : 'px-5 py-2.5 text-xs sm:text-sm bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-950/30'
-        }`}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+          width: isLarge ? '100%' : 'auto',
+          padding: isLarge ? '16px 32px' : '10px 20px',
+          borderRadius: '10px',
+          backgroundColor: '#00d26a',
+          color: '#000',
+          fontWeight: 900,
+          fontSize: isLarge ? '16px' : '13px',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: '0 4px 14px rgba(0,210,106,0.25)',
+          opacity: loading ? 0.7 : 1,
+          transition: 'all 0.15s ease',
+        }}
+        onMouseEnter={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = '#00e676';
+          (e.target as HTMLElement).style.transform = 'scale(1.02)';
+        }}
+        onMouseLeave={(e) => {
+          (e.target as HTMLElement).style.backgroundColor = '#00d26a';
+          (e.target as HTMLElement).style.transform = 'scale(1)';
+        }}
       >
         {loading ? (
           <>
-            <Loader2 className={`${isLarge ? 'h-6 w-6' : 'h-4 w-4'} animate-spin`} />
+            <Loader2 style={{ width: isLarge ? 24 : 16, height: isLarge ? 24 : 16, animation: 'spin 1s linear infinite' }} />
             <span>Generating Link...</span>
           </>
         ) : (
           <>
-            <Download
-              className={`${
-                isLarge ? 'h-6 w-6' : 'h-4 w-4'
-              } transition-transform group-hover:translate-y-0.5`}
-            />
+            <Download style={{ width: isLarge ? 24 : 16, height: isLarge ? 24 : 16 }} />
             <span>{label}</span>
-            <ExternalLink
-              className={`${isLarge ? 'h-4 w-4' : 'h-3.5 w-3.5'} opacity-75`}
-            />
+            <ExternalLink style={{ width: isLarge ? 16 : 14, height: isLarge ? 16 : 14, opacity: 0.7 }} />
           </>
         )}
       </button>
 
       {showNotice && (
-        <div className="mt-2.5 flex items-center justify-center gap-1.5 text-center text-[11px] text-gray-400">
-          <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '11px', color: '#9ca3af', textAlign: 'center' }}>
+          <ShieldCheck style={{ width: 14, height: 14, color: '#00d26a', flexShrink: 0 }} />
           <span>
             Sponsored Fast Download: Protected via{' '}
-            <strong className="text-emerald-400">ShrinkMe</strong> to support our servers.
+            <strong style={{ color: '#00d26a' }}>ShrinkMe</strong> to support our servers.
           </span>
         </div>
       )}
