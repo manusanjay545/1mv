@@ -118,30 +118,28 @@ Visit:
 
 ## ⚡ Automated 15-Minute Synchronization
 
-The synchronization engine is scheduled via `vercel.json`:
+### Vercel Plan Compatibility
+* **Vercel Pro**: Supports arbitrary cron frequency (`*/15 * * * *`).
+* **Vercel Hobby**: Vercel limits native cron jobs to **once per day** (`0 0 * * *`). Setting `*/15 * * * *` will trigger a deployment block.
 
-```json
-{
-  "crons": [
-    {
-      "path": "/api/cron/synchronize",
-      "schedule": "*/15 * * * *"
-    }
-  ]
-}
-```
+To provide seamless 15-minute synchronization on **both** free Hobby accounts and Pro accounts:
 
-### How the Workflow Operates:
-1. Every 15 minutes, Vercel Cron calls `GET /api/cron/synchronize` with `Authorization: Bearer <CRON_SECRET>`.
-2. The endpoint verifies `CRON_SECRET` and checks if synchronization is enabled in `sync_settings`.
-3. The engine fetches entries from the configured RSS feed or JSON API.
-4. Entries are parsed and sanitized (extracting title, language hints, quality tags, year).
-5. Compares against existing database records using unique slugs and `source_id`.
-6. New titles are inserted; changed metadata is updated; existing unchanged records are skipped.
-7. Logs are recorded in `sync_logs` with complete diagnostic metrics.
-8. If the source is temporarily unreachable, existing catalogue records remain intact and the error is logged.
+1. **Native Vercel Cron (`vercel.json`)**:
+   Configured to `0 0 * * *` (once daily at midnight) so that Vercel Hobby accounts deploy without errors. (If you are on Vercel Pro, you can change this to `*/15 * * * *`).
 
-> **Note on Vercel Plans**: Vercel Hobby accounts support 1 cron job per day. On Vercel Pro, 15-minute crons are natively supported. If deploying on Hobby, you can use a free external cron service such as [cron-job.org](https://cron-job.org) or [Upstash QStash] to ping `https://your-domain.com/api/cron/synchronize` every 15 minutes with the `Authorization: Bearer <CRON_SECRET>` header.
+2. **Free 15-Minute GitHub Actions Runner (`.github/workflows/sync-cron.yml`)**:
+   An automated workflow runs every 15 minutes directly from your GitHub repository for free:
+   - Go to your GitHub repository -> **Settings** -> **Secrets and variables** -> **Actions**.
+   - Add two secrets:
+     - `SITE_URL`: `https://your-app.vercel.app`
+     - `CRON_SECRET`: Your secret matching the one in Vercel environment variables.
+   - GitHub Actions will ping `https://your-app.vercel.app/api/cron/synchronize` every 15 minutes automatically.
+
+3. **Alternative External Cron Schedulers**:
+   You can also use free services like [cron-job.org](https://cron-job.org) or [Upstash QStash] to send a `GET` request to `https://your-app.vercel.app/api/cron/synchronize` every 15 minutes with header:
+   ```http
+   Authorization: Bearer <your-cron-secret>
+   ```
 
 ---
 

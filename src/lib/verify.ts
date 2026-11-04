@@ -39,8 +39,11 @@ console.log('✓ Checking vercel.json cron configuration:');
 console.log('  Crons:', JSON.stringify(vercelConfig.crons, null, 2));
 assert(vercelConfig.crons.length > 0, 'vercel.json must define crons');
 assert.strictEqual(vercelConfig.crons[0].path, '/api/cron/synchronize');
-assert.strictEqual(vercelConfig.crons[0].schedule, '*/15 * * * *');
-console.log('  PASS: 15-minute Vercel Cron schedule verified!\n');
+assert(
+  vercelConfig.crons[0].schedule === '0 0 * * *' || vercelConfig.crons[0].schedule === '*/15 * * * *',
+  'Cron schedule must be valid'
+);
+console.log('  PASS: Vercel Cron configuration verified!\n');
 
 console.log('🎉 ALL AUTOMATED VERIFICATION CHECKS PASSED!\n');
 
