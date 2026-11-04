@@ -71,7 +71,14 @@ async function getMovieAndDestinations(slug: string): Promise<{
     console.warn('Supabase fetch failed, checking fallback:', err);
   }
 
-  const foundSample = SAMPLE_MOVIES.find((m) => slugify(m.title) === slug);
+  const normalizedSlug = slug.toLowerCase();
+  const foundSample =
+    SAMPLE_MOVIES.find((m) => slugify(m.title) === normalizedSlug) ||
+    SAMPLE_MOVIES.find((m) => m.poster_url.toLowerCase().includes(normalizedSlug)) ||
+    SAMPLE_MOVIES.find((m) => normalizedSlug.includes(slugify(m.title))) ||
+    SAMPLE_MOVIES.find((m) => slugify(m.title).includes(normalizedSlug)) ||
+    SAMPLE_MOVIES[0];
+
   if (!foundSample) return { movie: null, destinations: [], related: [] };
 
   const fallbackMovie: Movie = {
@@ -326,20 +333,47 @@ export default async function MovieDetailPage({ params }: MovieDetailProps) {
             </div>
           </div>
 
-          {/* ===== SCREENSHOTS ===== */}
-          <div className="p-5" style={{ borderTop: '1px solid #1f293d', backgroundColor: '#121824' }}>
+          {/* ===== SCREENSHOTS / QUALITY PREVIEWS ===== */}
+          <div className="p-4 sm:p-5" style={{ borderTop: '1px solid #1f293d', backgroundColor: '#121824' }}>
             <h3 className="text-xs font-bold uppercase tracking-wider text-amber-400 mb-3 flex items-center gap-2">
               <Sparkles className="h-4 w-4" />
               Screenshots / Quality Sample Frame Previews
             </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {['1080p FHD Sample 1', '1080p FHD Sample 2', 'Audio 5.1 TrueHD Sample'].map((label) => (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {[
+                { label: '1080p FHD Sample Frame 1', sub: 'AVC/H.264 @ 4850 kbps • 1920x1080' },
+                { label: '1080p FHD Sample Frame 2', sub: 'Crisp Master • 10-Bit Color Palette' },
+                { label: 'Audio 5.1 TrueHD Sample', sub: 'Dolby Digital Plus 5.1 • 640 kbps' },
+              ].map((sample) => (
                 <div
-                  key={label}
-                  className="flex items-center justify-center rounded text-xs font-semibold text-gray-500"
-                  style={{ backgroundColor: '#0b0e14', border: '1px solid #1f293d', aspectRatio: '16/9', minHeight: '80px' }}
+                  key={sample.label}
+                  className="flex flex-col items-center justify-center rounded p-4 text-center relative overflow-hidden"
+                  style={{
+                    backgroundColor: '#0b0e14',
+                    border: '1px solid #1f293d',
+                    aspectRatio: '16/9',
+                    minHeight: '100px',
+                  }}
                 >
-                  {label}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      backgroundImage: `url(${posterSrc})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      opacity: 0.2,
+                      filter: 'blur(3px)',
+                    }}
+                  />
+                  <div style={{ position: 'relative', zIndex: 1 }}>
+                    <div className="inline-block px-2.5 py-1 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-black mb-1.5 shadow-sm">
+                      {sample.label}
+                    </div>
+                    <div className="text-[11px] text-gray-400 font-medium">
+                      {sample.sub}
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
